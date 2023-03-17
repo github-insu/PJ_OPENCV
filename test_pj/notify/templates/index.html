@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Constructive HTML Template</title>
+</head>
+<body>
+  
+  <form method="POST" enctype="multipart/form-data" action="/notify/image/view/">
+    {% csrf_token %}
+    <!-- html에서 이미지 업로드를 위한 input태그 -->
+    <input type="file" name="file_image">
+    <button type="submit">업로드</button>
+  </form>
+  
+  
+  <div width:100%, height100%>
+    <img src="data:image/jpg;base64, {{ img_data }}" alt="image">
+  </div>
+</body>
+</html>
