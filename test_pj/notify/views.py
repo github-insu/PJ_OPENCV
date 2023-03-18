@@ -8,68 +8,45 @@ import math
 import cv2
 import base64
 
-# 비디오 스트리밍 라이브러리
-from django.http import StreamingHttpResponse
-
-# #로그 기록 관련 라이브러리
-# import logging
-
-
-
-
-#############################################################
-# 로그 기록 #################################################
-#############################################################
-
-# # 로거 인스턴스
-# logger = logging.getLogger(__name__)
-
-# def my_view(request, arg1, arg2):
-#     # debug레벨 이상의 로그 레코드를 기록
-#     logger.debug('arg1: %s, arg2: %s', arg1, arg2)
-
-
 #############################################################
 # 첫 페이지 #################################################
 #############################################################
 def Home(request):
     return render(request, 'home.html')
 
-############################################################
-# 함수 #####################################################
-############################################################
-
-# 이미지 로드(찾은 파일 형식 : 바이트객체)
-def loadImage(request):
-    byte_img = request.FILES['file_image']
-    print(byte_img)
-    context = {'img_data' : byte_img}
-    print(context)
-    return context
-
-
-# 이미지 디코딩(바이트 객체 -> bgr객체)
-def decodeImage(request):
-    byte_img = loadImage(request)['img_data']
-    img_bgr = cv2.imdecode(np.fromstring(byte_img.read(), np.uint8), cv2.IMREAD_COLOR)
-    context = {'img_data' : img_bgr}
-    return context
-
-# 이미지 인코딩(바이트 객체 -> base64)
-def viewImage(request):
-    byte_img = loadImage(request)['img_data']
-    base64_img = base64.b64encode(byte_img.read()).decode('utf-8')
-    context = {'img_data' : base64_img}
-    return context
-
-
 #############################################################
-# Service 0 : 이미지 불러오기 ################################
+# Service 1 : 이미지 색상변환 ################################
 #############################################################
-# 이미지 불러오기(바이트객체 -> base64인코딩)
+
 def ViewImage(request):
     if request.method == 'POST':
-        context = viewImage(request)
+
+        # 파일명, byte_img.read()-바이트열
+        byte_img = request.FILES['file_image']
+        img_rgb = cv2.imdecode(np.fromstring(byte_img.read(), np.uint8), cv2.IMREAD_COLOR)
+        img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+        img = cv2.GaussianBlur(img_gray, (5,5), 0)
+        img_th = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 2)
+        
+        # img 파일을 jpg형식으로 인코딩한 numpy array로 변환 #
+        _, en_img_rgb = cv2.imencode('.jpg', img_rgb)
+        _, en_img_gray = cv2.imencode('.jpg', img_gray)
+
+        _, en_img_th = cv2.imencode('.jpg', img_th)
+        
+        # 인코딩한 객체를 바이트화 #
+        byte_img_rgb = en_img_rgb.tobytes()
+        byte_img_gray = en_img_gray.tobytes()
+        byte_img_th = en_img_th.tobytes()
+
+        # 바이트화한 객체를 전송하기 알맞은 형태로 가공 #
+        base64_img_rgb = base64.b64encode(byte_img_rgb).decode('utf-8')
+        base64_img_gray = base64.b64encode(byte_img_gray).decode('utf-8')
+        base64_img_th = base64.b64encode(byte_img_th).decode('utf-8')
+
+        context = {'img_rgb' : base64_img_rgb, 'img_gray' : base64_img_gray, 'img_th' : base64_img_th}
+
         return render(request, 'index.html', context)
     else :
         return render(request, 'index.html')
+    

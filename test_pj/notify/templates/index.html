@@ -16,9 +16,13 @@
     <button type="submit">업로드</button>
   </form>
   
-  
   <div width:100%, height100%>
-    <img src="data:image/jpg;base64, {{ img_data }}" alt="image">
+    <h3>컬러</h3><br>
+    <img src="data:image/jpg;base64, {{ img_rgb }}" alt="image"> <br>
+    <h3>흑백</h3><br>
+    <img src="data:image/jpg;base64, {{ img_gray }}" alt="image"> <br>
+    <h3>흰색&검은색</h3>
+    <img src="data:image/jpg;base64, {{ img_th }}" alt="image"> <br>
   </div>
 </body>
 </html>
