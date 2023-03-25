@@ -69,24 +69,17 @@ def LoadVideo(request):
 
 # 비디오 스트리밍
 def video_stream(request):
-    print('point1')
     byte_videos = LoadVideo(request)['file']
-    print('point2')
-    for byte_video in byte_videos:
-        encoded_byte_video = np.fromstring(byte_video, dtype=np.uint8)
-        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encoded_byte_video) + b'\r\n')
 
-    # cap = cv2.VideoCapture('./notify/templates/images/walking_human.mp4')
-    # while cap.isOpened():
-    #     ret, frame = cap.read()
+    cap = cv2.VideoCapture(byte_videos.temporary_file_path())
+    while cap.isOpened():
+        ret, frame = cap.read()
 
-    #     if not ret:
-    #         break
+        if not ret:
+            break
 
-    #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    #     _, frame_encoded = cv2.imencode('.jpg', frame)
-    #     yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(frame_encoded) + b'\r\n')
+        _, frame_encoded = cv2.imencode('.jpg', frame)
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(frame_encoded) + b'\r\n')
     
 
 def ObjectDetect(request):    
